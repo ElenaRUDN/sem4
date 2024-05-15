@@ -1,0 +1,22 @@
+#include <iostream>
+#include <vector>
+#include <list>
+#include <cstdlib>
+#include <chrono>
+
+// Размер
+/*
+int main() {
+    std::vector<int> v;
+    std::list<int> l;
+
+    for (int i = 0; i < 10000; ++i) {
+        v.push_back(i);
+        l.push_back(i);
+    }
+
+    std::cout << "Size of vector: " << sizeof(v) + (sizeof(int) * v.capacity()) << '\n';
+    std::cout << "Size of list: " << sizeof(l) + (sizeof(int) * l.size() * 3) << '\n';
+
+    return 0;
+}*/
