@@ -20,3 +20,36 @@ int main() {
 
     return 0;
 }*/
+
+// Скорость
+
+int main() {
+    const int size = 1000000;
+    std::vector<int> v(size, 0);
+    std::list<int> l(size, 0);
+
+    // Для вектора
+    auto start = std::chrono::high_resolution_clock::now();
+
+    v.insert(v.begin() + size / 2, 1);
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::cout << "Time for vector: "
+        << std::chrono::duration<double, std::milli>(end - start).count()
+        << " ms\n";
+
+    // Для списка
+    auto it = l.begin();
+    std::advance(it, size / 2);
+
+    start = std::chrono::high_resolution_clock::now();
+
+    l.insert(it, 1);
+
+    end = std::chrono::high_resolution_clock::now();
+    std::cout << "Time for list: "
+        << std::chrono::duration<double, std::milli>(end - start).count()
+        << " ms\n";
+
+    return 0;
+}
