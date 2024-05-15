@@ -1,60 +1,78 @@
-﻿#include <iostream>
+#include <iostream>
 #include <fstream>
 #include <vector>
 #include <algorithm>
 
+
 int main() {
-    setlocale(LC_ALL, "RUS");
-    // 1. Организация чтения из файла целочисленного одномерного вектора
-    std::ifstream inputFile("vector.txt");
-    std::vector<int> vector;
-    int number;
-    int minka;
-    while (inputFile >> number) {
-        vector.push_back(number);
-    }
-    inputFile.close();
+    std::vector<int> numbers; // создаём вектор целых чисел
+    std::ifstream input_file("C:\Users\Msi\Desktop\input.txt"); // открываем файл для чтения
+    int input_value, total_numbers = 9; // переменные для хранения прочитанных чисел и их общего количества
+        // читаем числа из файла и добавляем их в вектор
+        for (int i = 0; i < total_numbers; ++i) {
+            input_file >> input_value;
+            numbers.push_back(input_value);
+        }
 
-    // 2. Реверсирование последовательности элементов вектора
-    std::reverse(vector.begin(), vector.end());
-    
+    input_file.close(); // закрываем файл
 
-    // 3. Поиск минимального элемента
-    //minka = *std::min_element(vector.begin(), vector.end());
-    //std::cout << "Минимальный элемент: " << minka << std::endl;
+    // выводим исходный вектор
+    std::cout << "Initial vector:\n";
+    for (const auto& element : numbers)
+        std::cout << element << " ";
+    std::cout << "\n";
 
-    // 4. Удаление из вектора всех четных элементов
-    vector.erase(std::remove_if(vector.begin(), vector.end(), [](int element) { return element % 2 == 0; }), vector.end());
+    // реверсируем вектор
+    std::reverse(numbers.begin(), numbers.end());
+    std::cout << "Reversed vector:\n";
+    for (const auto& element : numbers)
+        std::cout << element << " ";
+    std::cout << "\n";
 
-    // 5. Сортировка вектора в убывающей или возрастающей последовательности
-    std::sort(vector.begin(), vector.end(), std::greater<>());  // Сортировка в убывающей последовательности
+    // находим минимальный элемент
+    int minElement = *std::min_element(numbers.begin(), numbers.end());
+    std::cout << "Minimum element: " << minElement << "\n";
 
-    // 6. Вставка в вектор произвольного элемента, не нарушая сортировку
-    int elementToInsert = 9;
-    auto insertPosition = std::lower_bound(vector.begin(), vector.end(), elementToInsert);
-    vector.insert(insertPosition, elementToInsert);
+    // удаляем чётные элементы
+    numbers.erase(std::remove_if(numbers.begin(), numbers.end(), [](int n) { return n % 2 == 0; }), numbers.end());
+    std::cout << "Vector after removing even elements:\n";
+    for (const auto& element : numbers)
+        std::cout << element << " ";
+    std::cout << "\n";
 
-    // 7. Определение индекса заданного элемента
-    int elementToFind = 9;
-    auto found = std::find(vector.begin(), vector.end(), elementToFind);
-    if (found != vector.end()) {
-        std::cout << "Индекс заданного элемента: " << std::distance(vector.begin(), found) << std::endl;
+    // сортируем вектор по убыванию
+    std::sort(numbers.rbegin(), numbers.rend());
+    std::cout << "Sorted vector (descending):\n";
+    for (const auto& element : numbers)
+        std::cout << element << " ";
+    std::cout << "\n";
+
+    // вставляем новый элемент в отсортированный вектор
+    int insert_value = 42;
+    auto position = std::upper_bound(numbers.begin(), numbers.end(), insert_value, std::greater<int>());
+    numbers.insert(position, insert_value);
+    std::cout << "Vector after inserting " << insert_value << ":\n";
+    for (const auto& element : numbers)
+        std::cout << element << " ";
+    std::cout << "\n";
+
+    // находим позицию заданного элемента
+    int search_value = 42;
+    auto search_result = std::find(numbers.begin(), numbers.end(), search_value);
+    int index = (search_result != numbers.end()) ? std::distance(numbers.begin(), search_result) : -1;
+    if (index != -1) {
+        std::cout << "Index of " << search_value << ": " << index << "\n";
     }
     else {
-        std::cout << "Заданный элемент не найден" << std::endl;
+        std::cout << search_value << " not found\n";
     }
 
-    // 8. Удаление из вектора дублированных элементов
-    std::sort(vector.begin(), vector.end());
-    vector.erase(std::unique(vector.begin(), vector.end()), vector.end());
-
-    // Вывод отсортированного вектора
-    std::cout << "Отсортированный вектор: ";
-    std::vector<int>::iterator it;
-    for (it = vector.begin(); it != vector.end(); ++it) {
-        std::cout << *it << " ";
-    }
-
+    // удаляем дубликаты
+    numbers.erase(std::unique(numbers.begin(), numbers.end()), numbers.end());
+    std::cout << "Vector after removing duplicates:\n";
+    for (const auto& element : numbers)
+        std::cout << element << " ";
+    std::cout << "\n";
 
     return 0;
 }
