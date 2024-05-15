@@ -1,20 +1,18 @@
-﻿#include <iostream>
-#include <limits>
-#include <vector>
-#include <cstdlib>
+#include<iostream>
+#include<limits>
+#include<vector>
+#include<cstdlib>
 
 using namespace std;
 
 template <typename T>
 int findSecondMax(T* arr, int n) {
-    
+
     T max1 = numeric_limits<T>::min();
     T max2 = numeric_limits<T>::min();
 
-    
     int max1_index = -1;
     int max2_index = -1;
-
 
     for (int i = 0; i < n; i++) {
         if (arr[i] > max1) {
@@ -30,14 +28,13 @@ int findSecondMax(T* arr, int n) {
         }
     }
 
-    
     return max2_index;
 }
 
 template <typename T>
 class Matrix {
 private:
-    
+
     unsigned int m;
     unsigned int n;
 
@@ -76,12 +73,15 @@ public:
     }
 
     Matrix operator+= (const Matrix<T>& other) {
-        for (int i = 0; i < m; ++i) {
-            for (int j = 0; j < n; ++j) {
-                data[i][j] = data[i][j] + other.data[i][j];
+        if (this->m != other.m || this->n != other.n)
+            throw std::invalid_argument("Matrices dimensions do not match");
+        else {
+            for (int i = 0; i < m; ++i) {
+                for (int j = 0; j < n; ++j) {
+                    data[i][j] = data[i][j] + other.data[i][j];
+                }
             }
         }
-
         return *this;
     }
 
@@ -105,10 +105,11 @@ public:
     }
 
     Matrix operator*(const Matrix<T>& other) const {
+        if (this->n != other.m)
+            throw std::invalid_argument("Matrices dimensions do not match for multiplication");
         Matrix result(m, other.n);
         for (unsigned int i = 0; i < m; ++i) {
             for (unsigned int j = 0; j < other.n; ++j) {
-                result.data[i][j] = 0;
                 for (unsigned int k = 0; k < n; ++k) {
                     result.data[i][j] += data[i][k] * other.data[k][j];
                 }
@@ -134,44 +135,34 @@ public:
     bool operator!=(const Matrix<T>& other) const {
         return !(*this == other);
     }
-   
+
 };
 
-
-template <typename T>
+template <typename T, unsigned int n>
 class Vector : public Matrix<T> {
 public:
-    Vector(unsigned int n) : Matrix<T>(1, n) {}
+    Vector() : Matrix<T>(1, n) {}
 
     T dotProduct(const Vector& other) const {
         T sum = 0;
-        for (unsigned int i = 0; i < 3; ++i) {
-            sum += this->at(0, i) * other.at(0, i);
+        for (unsigned int i = 0; i < n; ++i) {
+            sum += this->data[0][i] * other.data[0][i];
         }
         return sum;
     }
 
-    Vector crossProduct(const Vector& other) const {
-        Vector<T> result;
-        for (int i = 0; i < 3; ++i) {
-            if (i == 0) {
-                result = data.at(1) * other.data.at(2) - data.at(2) * other.data.at(1);
-            }
-            if (i == 1) {
-                result = data.at(2) * other.data.at(0) - data.at(0) * other.data.at(2);
-            }
-            if (i == 2) {
-                result = data.at(0) * other.data.at(1) - data.at(1) * other.data.at(0);
-            }
-            
-
-            return result;
-        }
+    template <typename U = T>
+    typename std::enable_if<n == 3, Vector<U, n>>::type crossProduct(const Vector& other) const {
+        Vector<T, n> result;
+        result.data[0][0] = this->data[0][1] * other.data[0][2] - this->data[0][2] * other.data[0][1];
+        result.data[0][1] = this->data[0][2] * other.data[0][0] - this->data[0][0] * other.data[0][2];
+        result.data[0][2] = this->data[0][0] * other.data[0][1] - this->data[0][1] * other.data[0][0];
+        return result;
     }
 };
 
 int main() {
-    setlocale(LC_ALL, "Rus");
+    setlocale(LC_ALL, "rus");
     //1
     int arr1[] = { 11, 72, 7, 2, 5 };
     float arr2[] = { 3.2, 1.3, 7.4, 4.5, 5.6 };
@@ -195,10 +186,10 @@ int main() {
     std::cout << m1;
 
     //3
-    Vector<int> vector1(3);
+    Vector<int, 3> vector1;
     vector1.fillRandom();
 
-    Vector<int> vector2(3);
+    Vector<int, 3> vector2;
     vector2.fillRandom();
 
     // Вычислить скалярное произведение
@@ -206,9 +197,8 @@ int main() {
     std::cout << "Скалярное произведение: " << dotProduct << std::endl;
 
     // Вычислить векторное произведение
-    Vector<int> crossProduct = vector1.crossProduct(vector2);
+    Vector<int, 3> crossProduct = vector1.crossProduct(vector2);
     std::cout << "Векторное произведение: " << crossProduct << std::endl;
-
 
     return 0;
 }
