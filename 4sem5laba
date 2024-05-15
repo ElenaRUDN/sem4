@@ -1,0 +1,94 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+#include <cstdlib>
+
+using namespace std;
+
+template <typename T>
+class Matrix {
+private:
+    unsigned int m;
+    unsigned int n;
+
+public:
+    std::vector<std::vector<T>> data;
+    Matrix() {
+        m = 3;
+        n = 3;
+        data = std::vector<std::vector<T>>(m, std::vector<T>(n, 0));
+    }
+
+    Matrix(unsigned int m, unsigned int n) : m(m), n(n) {
+        data = std::vector<std::vector<T>>(m, std::vector<T>(n, 0));
+    }
+
+    ~Matrix() {
+        std::cout << "DELETED!!!!" << std::endl;
+    }
+
+    void fillRandom() {
+        for (unsigned int i = 0; i < m; ++i) {
+            for (unsigned int j = 0; j < n; ++j) {
+                data[i][j] = static_cast<T>(rand()) / 10.0;
+            }
+        }
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const Matrix<T>& matrix) {
+        for (unsigned int i = 0; i < matrix.m; ++i) {
+            for (unsigned int j = 0; j < matrix.n; ++j) {
+                os << matrix.data[i][j] << " ";
+            }
+            os << std::endl;
+        }
+        return os;
+    }
+};
+
+// Save to a text file
+template<typename T>
+void saveMatrixToTextFile(Matrix<T>& matrix, std::string filename) {
+    std::ofstream file(filename);
+    for (auto row : matrix.data) {
+        for (auto element : row) {
+            file << element << " ";
+        }
+        file << std::endl;
+    }
+    file.close();
+}
+
+// Load from a text file
+template<typename T>
+Matrix<T> loadMatrixFromTextFile(std::string filename) {
+    std::ifstream file(filename);
+    std::vector<std::vector<T>> data;
+    std::string line;
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
+        T value;
+        std::vector<T> row;
+        while (iss >> value) {
+            row.push_back(value);
+        }
+        data.push_back(row);
+    }
+    file.close();
+    Matrix<T> matrix(data.size(), data[0].size());
+    matrix.data = data;
+    return matrix;
+}
+
+int main() {
+
+    // Example of using all these functions
+    Matrix<double> matrix1(3, 3);
+    matrix1.fillRandom();
+
+    // Save Matrix to Text File
+    std::cout << "Matrix saved in text format:\n" << matrix1;
+    saveMatrixToTextFile(matrix1, "matrix.txt");
+
+    // Load Matrix from Text File
+    Matrix<double> loadedMatrix
