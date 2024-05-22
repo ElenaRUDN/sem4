@@ -1,6 +1,7 @@
-﻿#include <iostream>
+#include <iostream>
 #include <vector>
 #include <random>
+#include <ctime>
 
 using namespace std;
 
@@ -21,14 +22,23 @@ public:
         position.x = x;
         position.y = y;
     }
+
     void move() {
         int dx, dy;
         cout << "Prey's move (input dx and dy, dx and dy in [-1, 1]): ";
         cin >> dx >> dy;
-        if (dx > 1) dx = 1; else if (dx < -1) dx = -1;
-        if (dy > 1) dy = 1; else if (dy < -1) dy = -1;
-        position.x += dx;
-        position.y += dy;
+        position.x = max(0, min(19, position.x + dx));
+        position.y = max(0, min(19, position.y + dy));
+    }
+
+    void randomMove() {
+        random_device rd;
+        mt19937 gen(rd());
+        uniform_int_distribution<> dis(-1, 1);
+        int dx = dis(gen);
+        int dy = dis(gen);
+        position.x = max(0, min(19, position.x + dx));
+        position.y = max(0, min(19, position.y + dy));
     }
 };
 
@@ -38,14 +48,40 @@ public:
         position.x = x;
         position.y = y;
     }
+
     void move() {
         int dx, dy;
         cout << "Predator's move (input dx and dy, dx and dy in [-3, 3]): ";
         cin >> dx >> dy;
-        if (dx > 3) dx = 3; else if (dx < -3) dx = -3;
-        if (dy > 3) dy = 3; else if (dy < -3) dy = -3;
-        position.x += dx;
-        position.y += dy;
+        position.x = max(0, min(19, position.x + dx));
+        position.y = max(0, min(19, position.y + dy));
+
+        // Apply the special condition
+        applySpecialCondition();
+    }
+
+    void chase(Prey* prey) {
+        int dx = prey->position.x - position.x;
+        int dy = prey->position.y - position.y;
+
+        if (dx != 0) {
+            position.x += (dx > 0) ? min(3, dx) : max(-3, dx);
+        }
+        if (dy != 0) {
+            position.y += (dy > 0) ? min(3, dy) : max(-3, dy);
+        }
+
+        // Apply the special condition
+        applySpecialCondition();
+    }
+
+private:
+    void applySpecialCondition() {
+        if (position.x != 0) {
+            position.y = 0;
+        } else if (position.y != 0) {
+            position.x = 0;
+        }
     }
 };
 
@@ -53,33 +89,50 @@ class Arena {
 public:
     Prey* prey;
     Predator* predator;
-    Arena(Prey* p, Predator* pr) : prey(p), predator(pr) {}
+    int steps;
+
+    Arena(Prey* p, Predator* pr) : prey(p), predator(pr), steps(0) {}
 
     bool isGameOver() {
-        int distance = abs(predator->position.x - prey->position.x) +
-            abs(predator->position.y - prey->position.y);
-        return distance < 1;
+        return (predator->position.x == prey->position.x &&
+                predator->position.y == prey->position.y) || (steps >= 10);
     }
 
     void updatePositions(int userRole) {
-        if (userRole == 1) {
+        if (userRole == 1) {  // User is Prey
             prey->move();
+        } else {  // User is Predator
             predator->move();
         }
-        else {
-            predator->move();
-            prey->move();
+        predator->chase(prey);
+        if (userRole == 2) {
+            prey->randomMove();
         }
+        steps++;
     }
 
     void showPositions() {
         cout << "Prey: (" << prey->position.x << ", " << prey->position.y << ")\n";
         cout << "Predator: (" << predator->position.x << ", " << predator->position.y << ")\n";
     }
+
+    void drawBoard() {
+        vector<vector<char>> board(20, vector<char>(20, '.'));
+        board[prey->position.y][prey->position.x] = 'P';
+        board[predator->position.y][predator->position.x] = 'D';
+
+        for (const auto& row : board) {
+            for (const auto& cell : row) {
+                cout << cell << ' ';
+            }
+            cout << endl;
+        }
+    }
 };
 
 int main() {
-    int userRole, userMove;
+    srand(time(0));
+    int userRole;
     cout << "Choose your role: 1 for Prey, 2 for Predator: ";
     cin >> userRole;
     Prey* prey = new Prey(5, 5);
@@ -87,12 +140,17 @@ int main() {
     Arena* arena = new Arena(prey, predator);
 
     arena->showPositions();
+    arena->drawBoard();
     while (!arena->isGameOver()) {
         arena->updatePositions(userRole);
         arena->showPositions();
+        arena->drawBoard();
     }
 
     cout << "Game over!\n";
+    if (arena->steps >= 10) {
+        cout << "The game ended because the maximum number of steps was reached.\n";
+    }
 
     delete arena;
     delete prey;
