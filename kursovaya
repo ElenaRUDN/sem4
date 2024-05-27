@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <random>
-#include <ctime>
+
 
 using namespace std;
 
@@ -32,11 +32,10 @@ public:
     }
 
     void randomMove() {
-        random_device rd;
-        mt19937 gen(rd());
-        uniform_int_distribution<> dis(-1, 1);
-        int dx = dis(gen);
-        int dy = dis(gen);
+        int start = -1;
+        int end = 1;
+        int dx = rand() % (end - start + 1) + start;
+        int dy = rand() % (end - start + 1) + start;
         position.x = max(0, min(19, position.x + dx));
         position.y = max(0, min(19, position.y + dy));
     }
@@ -56,33 +55,28 @@ public:
         position.x = max(0, min(19, position.x + dx));
         position.y = max(0, min(19, position.y + dy));
 
-        // Apply the special condition
-        applySpecialCondition();
+     
     }
 
     void chase(Prey* prey) {
-        int dx = prey->position.x - position.x;
-        int dy = prey->position.y - position.y;
+        int randomaizer = rand() % (2 - 1 + 1) + 1;
+        if (randomaizer != 1) {
 
-        if (dx != 0) {
+            int dx = prey->position.x - position.x;
+            
             position.x += (dx > 0) ? min(3, dx) : max(-3, dx);
+        
         }
-        if (dy != 0) {
+        else {
+            int dy = prey->position.y - position.y;
+        
             position.y += (dy > 0) ? min(3, dy) : max(-3, dy);
+            
         }
-
-        // Apply the special condition
-        applySpecialCondition();
+   
     }
 
-private:
-    void applySpecialCondition() {
-        if (position.x != 0) {
-            position.y = 0;
-        } else if (position.y != 0) {
-            position.x = 0;
-        }
-    }
+
 };
 
 class Arena {
@@ -95,19 +89,20 @@ public:
 
     bool isGameOver() {
         return (predator->position.x == prey->position.x &&
-                predator->position.y == prey->position.y) || (steps >= 10);
+            predator->position.y == prey->position.y) || (steps >= 10);
     }
 
     void updatePositions(int userRole) {
         if (userRole == 1) {  // User is Prey
             prey->move();
-        } else {  // User is Predator
-            predator->move();
+            predator->chase(prey);
         }
-        predator->chase(prey);
-        if (userRole == 2) {
+        else {  // User is Predator
+            predator->move();
             prey->randomMove();
         }
+        
+        
         steps++;
     }
 
@@ -131,7 +126,7 @@ public:
 };
 
 int main() {
-    srand(time(0));
+    
     int userRole;
     cout << "Choose your role: 1 for Prey, 2 for Predator: ";
     cin >> userRole;
@@ -148,8 +143,8 @@ int main() {
     }
 
     cout << "Game over!\n";
-    if (arena->steps >= 10) {
-        cout << "The game ended because the maximum number of steps was reached.\n";
+    if (arena->steps >= 1) {
+        cout << "The prey is a winner.\n";
     }
 
     delete arena;
@@ -157,4 +152,5 @@ int main() {
     delete predator;
 
     return 0;
+
 }
